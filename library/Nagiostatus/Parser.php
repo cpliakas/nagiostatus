@@ -86,7 +86,7 @@ class Nagiostatus_Parser
      */
     public function __construct($filename)
     {
-        $inStatus = FALSE;
+        $inStatus = false;
         $errors = array();
 
         // Opens file, iterates over lines.
@@ -108,7 +108,7 @@ class Nagiostatus_Parser
                 $status = array();
             } elseif (0 === strpos($buffer, '}')) {
                 $this->_data[$inStatus][] = $status;
-                $inStatus = FALSE;
+                $inStatus = false;
             } elseif ($inStatus) {
                 if (preg_match('/^([_a-zA-Z]*)=(.*)$/', $buffer, $matches)) {
                     $status[$matches[1]] = $matches[2];

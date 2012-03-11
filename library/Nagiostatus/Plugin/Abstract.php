@@ -23,32 +23,32 @@ abstract class Nagiostatus_Plugin_Abstract
 {
 
     /**
-     * The calling Nagiostatus instance.
+     * The Nagiostatus_Parser instance containing the parsed data.
      *
      * @var Nagiostatus
      */
-    protected $_status;
+    protected $_parser;
 
     /**
-     * Sets the calling Nagiostatus instance.
+     * Sets the Nagiostatus_Parser instance containing the parsed data.
      *
-     * @param Nagiostatus $status
-     *   The calling Nagiostatus instance.
+     * @param Nagiostatus_Parser $status
+     *   The Nagiostatus_Parser instance containing the parsed data.
      */
-    public function __construct(Nagiostatus $status)
+    public function __construct(Nagiostatus_Parser $parser)
     {
-        $this->_status = $status;
+        $this->_parser = $parser;
     }
 
     /**
-     * Returns the calling Nagiostatus instance.
+     * Returns the Nagiostatus_Parser instance containing the parsed data
      *
-     * @return Nagiostatus
-     *   The calling Nagiostatus instance.
+     * @return Nagiostatus_Parser
+     *   The Nagiostatus_Parser instance containing the parsed data
      */
-    public function getStatus()
+    public function getParser()
     {
-        return $this->_status;
+        return $this->_parser;
     }
 
     /**
@@ -59,7 +59,7 @@ abstract class Nagiostatus_Plugin_Abstract
      */
     public function toArray()
     {
-        return $this->_status->toArray();
+        return $this->_parser->toArray();
     }
 
     /**

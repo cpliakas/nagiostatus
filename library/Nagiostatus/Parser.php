@@ -17,8 +17,9 @@
  * Library that parses Nagios status.dat files into machine readable formats.
  *
  * @package    Nagiostatus
+ * @subpackage Parser
  */
-class Nagiostatus
+class Nagiostatus_Parser
 {
     /**
      * An associative array modeling the status.dat data.
@@ -69,7 +70,15 @@ class Nagiostatus
     }
 
     /**
-     * Parses
+     * Returns the default plugin.
+     */
+    static public function getDefaultPlugin()
+    {
+        return self::$_defaultPlugin;
+    }
+
+    /**
+     * Parses the status data into an associatice array.
      *
      * @param string $filename
      *   The name of the file to pass to fopen(). This could be an absolute /
@@ -130,6 +139,9 @@ class Nagiostatus
      *
      * @param string $pluginName
      *   The name of the plugin used to render the data, i.e. "xml" or "json".
+     *
+     * @return string|false
+     *   The rendered status data, false if there are errors.
      */
     public function render($pluginName = null)
     {

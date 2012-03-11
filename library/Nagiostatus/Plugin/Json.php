@@ -29,9 +29,9 @@ class Nagiostatus_Plugin_Json extends Nagiostatus_Plugin_Abstract
         if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
             // Encode <, >, ', &, and " using json_encode() options parameter.
             $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
-            return json_encode($var, $options);
+            return json_encode($this->toArray(), $options);
         } else {
-            // Work around for poor JSON encoding in PHP 5.2.
+            // Workaround for poor JSON encoding in PHP 5.2.
             return $this->encode($this->toArray());
         }
     }

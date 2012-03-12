@@ -87,10 +87,6 @@ class Nagiostatus_Parser
     public function __construct($filename)
     {
         $this->_filename = $filename;
-        $inStatus = false;
-        $errors = array();
-
-
     }
 
     /**

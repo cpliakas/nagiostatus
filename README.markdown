@@ -17,8 +17,8 @@ Converting Nagios Status Data To Machine Readable Formats
 
     ?>
 
-Working With XML:
-=================
+Working With XML
+================
 
     <?php
 

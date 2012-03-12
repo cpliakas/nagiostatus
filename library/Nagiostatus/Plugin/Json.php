@@ -22,18 +22,46 @@
 class Nagiostatus_Plugin_Json extends Nagiostatus_Plugin_Abstract
 {
     /**
-     * Returns the status data in machine readable format.
+     * Whether the
+     *
+     * @var boolean
      */
-    public function execute()
+    protected $_isFirst = true;
+
+    /**
+     * Overrides Nagiostatus_Plugin_Abstract::initDocument().
+     */
+    public function initDocument()
     {
-        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+        echo '[';
+    }
+
+    /**
+     * Implements Nagiostatus_Plugin_Abstract::execute().
+     */
+    public function execute(array $status)
+    {
+        if (!$this->_isFirst) {
+            echo ',';
+        } else {
+            $this->_isFirst = false;
+        }
+       if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
             // Encode <, >, ', &, and " using json_encode() options parameter.
             $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
-            echo json_encode($this->toArray(), $options);
+            echo json_encode($status, $options);
         } else {
             // Workaround for poor JSON encoding in PHP 5.2.
-            echo $this->encode($this->toArray());
+            echo $this->encode($status);
         }
+    }
+
+    /**
+     * Overrides Nagiostatus_Plugin_Abstract::finalizeDocument().
+     */
+    public function finalizeDocument()
+    {
+        echo ']';
     }
 
     /**

@@ -25,7 +25,7 @@ Working With XML
     $document = new SimpleXMLElement($xml);
 
     // Find all hoststatus reports.
-    $results = $document->xpath('//status[@type="hoststatus"]');
+    $results = $document->xpath('//status[@type="hoststatus"]/report');
 
     // Find all CPU Status reports.
     $results = $document->xpath('///report[service_description="CPU Stats"]');

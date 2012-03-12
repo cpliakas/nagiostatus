@@ -22,23 +22,35 @@
 class Nagiostatus_Plugin_Xml extends Nagiostatus_Plugin_Abstract
 {
     /**
-     * Returns the status data in machine readable format.
+     * Overrides Nagiostatus_Plugin_Abstract::initDocument().
      */
-    public function execute()
+    public function initDocument()
     {
         echo '<?xml version="1.0" encoding="UTF-8" ?><statusDat>';
-        foreach ($this->toArray() as $status) {
-            $type = $this->escape($status['_type']);
-            unset($status['_type']);
-            echo '<status type="' . $type . '">';
-            echo "<type>$type</type>";
-            echo '<report>';
-            foreach ($status as $reportName => $reportData) {
-                echo "<$reportName>" . $this->escape($reportData) . "</$reportName>";
-            }
-            echo '</report>';
-            echo '</status>';
+    }
+
+    /**
+     * Implements Nagiostatus_Plugin_Abstract::execute().
+     */
+    public function execute(array $status)
+    {
+        $type = $this->escape($status['_type']);
+        unset($status['_type']);
+        echo '<status type="' . $type . '">';
+        echo "<type>$type</type>";
+        echo '<report>';
+        foreach ($status as $reportName => $reportData) {
+            echo "<$reportName>" . $this->escape($reportData) . "</$reportName>";
         }
+        echo '</report>';
+        echo '</status>';
+    }
+
+    /**
+     * Overrides Nagiostatus_Plugin_Abstract::finalizeDocument().
+     */
+    public function finalizeDocument()
+    {
         echo '</statusDat>';
     }
 

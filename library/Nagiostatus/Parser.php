@@ -22,11 +22,11 @@
 class Nagiostatus_Parser
 {
     /**
-     * An associative array modeling the status.dat data.
+     * The name of the file to pass to fopen().
      *
-     * @var array
+     * @var string
      */
-    protected $_data = array();
+    protected $_filename;
 
     /**
      * Plugin registry.
@@ -86,13 +86,28 @@ class Nagiostatus_Parser
      */
     public function __construct($filename)
     {
+        $this->_filename = $filename;
         $inStatus = false;
         $errors = array();
 
+
+    }
+
+    /**
+     * Builds the document.
+     *
+     * @param Nagiostatus_Plugin_Abstract $plugin
+     *   The plugin being used to render the data.
+     */
+    public function buildDocument(Nagiostatus_Plugin_Abstract $plugin)
+    {
         // Opens file, iterates over lines.
-        if (!$fh = @fopen($filename, 'r')) {
+        if (!$fh = @fopen($this->_filename, 'r')) {
             // @todo Handle errors
         }
+
+        // Initializes document, iterates over lines.
+        $plugin->initDocument();
         while (!feof($fh)) {
 
             // Reads line into buffer, skips processing if empty.
@@ -101,12 +116,13 @@ class Nagiostatus_Parser
                 continue;
             }
 
+            // Processes buffer.
             if ($inStatus) {
                 if (false !== ($pos = strpos($buffer, '='))) {
                     $key = ltrim(substr($buffer, 0, $pos));
                     $status[$key] = rtrim(substr($buffer, $pos + 1));
                 } elseif (strpos($buffer, '}')) {
-                    $this->_data[] = $status;
+                    $plugin->execute($status);
                     $inStatus = false;
                 } else {
                     // @todo Handle errors
@@ -119,18 +135,9 @@ class Nagiostatus_Parser
             }
         }
 
+        // Finalizes document, closes handle.
+        $plugin->finalizeDocument();
         fclose($fh);
-    }
-
-    /**
-     * Returns the prsed data array.
-     *
-     * @return array
-     *   The associative array of status data.
-     */
-    public function toArray()
-    {
-        return $this->_data;
     }
 
     /**
@@ -154,10 +161,8 @@ class Nagiostatus_Parser
                 ob_start();
             }
             $plugin = new self::$_plugins[$pluginName]($this);
-            $plugin->execute();
-            if ($return) {
-                return ob_get_clean();
-            }
+            $this->buildDocument($plugin);
+            return ($return) ? ob_get_clean() : true;
         } else {
             // @todo Handle errors
         }

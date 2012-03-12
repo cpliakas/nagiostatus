@@ -15,7 +15,7 @@ Converting Nagios Status Data To Machine Readable Formats
     // Output XML directly.
     // $parser->render('xml');
 
-    // Render as JSON.
+    // Output JSON directly.
     // $parser->render('json');
 
     ?>

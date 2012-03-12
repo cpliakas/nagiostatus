@@ -52,18 +52,26 @@ abstract class Nagiostatus_Plugin_Abstract
     }
 
     /**
-     * Renders the status data as an array.
-     *
-     * @return array
-     *   The associative array of status data.
+     * Outputs any document headers.
      */
-    public function toArray()
+    public function initDocument()
     {
-        return $this->_parser->toArray();
+        // Override to add any headers ...
     }
 
     /**
      * Outputs the status data in machine readable format.
+     *
+     * @param array $status
+     *   The parsed status information.
      */
-    abstract public function execute();
+    abstract public function execute(array $status);
+
+    /**
+     * Outputs any document footers.
+     */
+    public function finalizeDocument()
+    {
+        // Override to add any footers ...
+    }
 }

@@ -26,22 +26,20 @@ class Nagiostatus_Plugin_Xml extends Nagiostatus_Plugin_Abstract
      */
     public function execute()
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8" ?><statusDat>';
-        foreach ($this->toArray() as $statusName => $status) {
-            $xml .= '<status type="' . htmlspecialchars($statusName) . '">';
-            foreach ($status as $reports) {
-                $xml .= '<report>';
-                foreach ($reports as $reportName => $reportData) {
-                    $xml .= "<$reportName>";
-                    $xml .= $this->escape($reportData);
-                    $xml .= "</$reportName>";
-                }
-                $xml .= '</report>';
+        echo '<?xml version="1.0" encoding="UTF-8" ?><statusDat>';
+        foreach ($this->toArray() as $status) {
+            $type = $this->escape($status['_type']);
+            unset($status['_type']);
+            echo '<status type="' . $type . '">';
+            echo "<type>$type</type>";
+            echo '<report>';
+            foreach ($status as $reportName => $reportData) {
+                echo "<$reportName>" . $this->escape($reportData) . "</$reportName>";
             }
-            $xml .= "</status>";
+            echo '</report>';
+            echo '</status>';
         }
-        $xml .= '</statusDat>';
-        return $xml;
+        echo '</statusDat>';
     }
 
     /**

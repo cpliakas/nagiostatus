@@ -10,10 +10,13 @@ Converting Nagios Status Data To Machine Readable Formats
 
     // Render the status.dat file as XML.
     $parser = new Nagiostatus_Parser('/usr/local/nagios/var/status.dat');
-    $xml = $parser->render('xml');
+    $xml = $parser->render('xml', true);
 
-    // Uncomment to render as JSON.
-    // $json = $parser->render('json');
+    // Output XML directly.
+    // $parser->render('xml');
+
+    // Render as JSON.
+    // $parser->render('json');
 
     ?>
 

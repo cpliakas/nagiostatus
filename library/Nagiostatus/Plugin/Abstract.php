@@ -63,7 +63,7 @@ abstract class Nagiostatus_Plugin_Abstract
     }
 
     /**
-     * Returns the status data in machine readable format.
+     * Outputs the status data in machine readable format.
      */
     abstract public function execute();
 }

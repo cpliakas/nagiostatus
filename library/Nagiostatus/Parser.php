@@ -96,25 +96,24 @@ class Nagiostatus_Parser
         while (!feof($fh)) {
 
             // Reads line into buffer, skips processing if empty.
-            $buffer = trim((string) fgets($fh, 1024));
+            $buffer = fgets($fh, 1024);
             if (!$buffer) {
                 continue;
             }
 
-            // Processes buffer, adds statuses and reports to data array.
-            // @todo Eliminate preg_match (?) and reorder for faster processing.
-            if (preg_match('/^([_a-zA-Z]*)\\s*{$/', $buffer, $matches)) {
-                $inStatus = $matches[1];
-                $status = array();
-            } elseif (0 === strpos($buffer, '}')) {
-                $this->_data[$inStatus][] = $status;
-                $inStatus = false;
-            } elseif ($inStatus) {
-                if (preg_match('/^([_a-zA-Z]*)=(.*)$/', $buffer, $matches)) {
-                    $status[$matches[1]] = $matches[2];
+            if ($inStatus) {
+                if (false !== ($pos = strpos($buffer, '='))) {
+                    $key = ltrim(substr($buffer, 0, $pos));
+                    $status[$key] = rtrim(substr($buffer, $pos + 1));
+                } elseif (strpos($buffer, '}')) {
+                    $this->_data[] = $status;
+                    $inStatus = false;
                 } else {
                     // @todo Handle errors
                 }
+            } elseif (strpos($buffer, '{')) {
+                $inStatus = true;
+                $status = array('_type' => rtrim($buffer, " {\r\n"));
             } else {
                 // @todo Handle errors
             }
@@ -135,22 +134,30 @@ class Nagiostatus_Parser
     }
 
     /**
-     * Renders the data using the rendering plugin.
+     * Outputs the data using the rendering plugin.
      *
      * @param string $pluginName
      *   The name of the plugin used to render the data, i.e. "xml" or "json".
+     * @param bool $return
+     *   Return the variable representation instead of outputing it.
      *
-     * @return string|false
+     * @return string|bool
      *   The rendered status data, false if there are errors.
      */
-    public function render($pluginName = null)
+    public function render($pluginName = null, $return = false)
     {
         if (null === $pluginName) {
             $pluginName = self::getDefaultPlugin();
         }
         if (isset(self::$_plugins[$pluginName])) {
+            if ($return) {
+                ob_start();
+            }
             $plugin = new self::$_plugins[$pluginName]($this);
-            return $plugin->execute();
+            $plugin->execute();
+            if ($return) {
+                return ob_get_clean();
+            }
         } else {
             // @todo Handle errors
         }

@@ -46,7 +46,7 @@ class Nagiostatus_Plugin_Json extends Nagiostatus_Plugin_Abstract
         } else {
             $this->_isFirst = false;
         }
-       if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
             // Encode <, >, ', &, and " using json_encode() options parameter.
             $options = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
             echo json_encode($status, $options);

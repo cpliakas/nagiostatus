@@ -26,11 +26,11 @@ class Nagiostatus_Plugin_Xml extends Nagiostatus_Plugin_Abstract
      */
     public function execute()
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8" ?><status>';
+        $xml = '<?xml version="1.0" encoding="UTF-8" ?><statusDat>';
         foreach ($this->toArray() as $statusName => $status) {
-            $xml .= "<$statusName>";
+            $xml .= '<status type="' . htmlspecialchars($statusName) . '">';
             foreach ($status as $reports) {
-                $xml .= "<report>";
+                $xml .= '<report>';
                 foreach ($reports as $reportName => $reportData) {
                     $xml .= "<$reportName>";
                     $xml .= $this->escape($reportData);
@@ -38,9 +38,9 @@ class Nagiostatus_Plugin_Xml extends Nagiostatus_Plugin_Abstract
                 }
                 $xml .= '</report>';
             }
-            $xml .= "</$statusName>";
+            $xml .= "</status>";
         }
-        $xml .= '</status>';
+        $xml .= '</statusDat>';
         return $xml;
     }
 

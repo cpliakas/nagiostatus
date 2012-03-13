@@ -141,11 +141,14 @@ class Nagiostatus_Parser
      *
      * @param string $pluginName
      *   The name of the plugin used to render the data, i.e. "xml" or "json".
+     *   Defaults to null meaning the default plugin is used.
      * @param bool $return
      *   Return the variable representation instead of outputing it.
      *
      * @return string|bool
-     *   The rendered status data, false if there are errors.
+     *   Returns false on errors. If $return is false, this method returns true
+     *   on success. If $return is true, this method returns the parsed document
+     *   as a string in the machine readable format determined by the plugin.
      */
     public function render($pluginName = null, $return = false)
     {

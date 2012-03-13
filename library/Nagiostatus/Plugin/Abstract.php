@@ -16,24 +16,26 @@
 /**
  * Base class for Nagiostatus plugins.
  *
+ * Plugins render the status.dat file in machine readable formats and output the
+ * data directly to STDOUT as opposed to building the document in memory.
+ *
  * @package    Nagiostatus
  * @subpackage Plugin
  */
 abstract class Nagiostatus_Plugin_Abstract
 {
-
     /**
-     * The Nagiostatus_Parser instance containing the parsed data.
+     * The calling Nagiostatus_Parser instance.
      *
      * @var Nagiostatus
      */
     protected $_parser;
 
     /**
-     * Sets the Nagiostatus_Parser instance containing the parsed data.
+     * Sets the calling Nagiostatus_Parser instance.
      *
      * @param Nagiostatus_Parser $status
-     *   The Nagiostatus_Parser instance containing the parsed data.
+     *   The calling Nagiostatus_Parser instance.
      */
     public function __construct(Nagiostatus_Parser $parser)
     {
@@ -41,10 +43,10 @@ abstract class Nagiostatus_Plugin_Abstract
     }
 
     /**
-     * Returns the Nagiostatus_Parser instance containing the parsed data
+     * Returns the calling Nagiostatus_Parser instance.
      *
      * @return Nagiostatus_Parser
-     *   The Nagiostatus_Parser instance containing the parsed data
+     *   The calling Nagiostatus_Parser instance.
      */
     public function getParser()
     {
@@ -63,7 +65,7 @@ abstract class Nagiostatus_Plugin_Abstract
      * Outputs the status data in machine readable format.
      *
      * @param array $status
-     *   The parsed status information.
+     *   An individual status information block parsed as an associative array.
      */
     abstract public function execute(array $status);
 

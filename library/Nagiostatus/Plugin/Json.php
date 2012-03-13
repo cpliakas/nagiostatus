@@ -22,7 +22,7 @@
 class Nagiostatus_Plugin_Json extends Nagiostatus_Plugin_Abstract
 {
     /**
-     * Whether the
+     * Flags whether we are parsing the first status block.
      *
      * @var boolean
      */

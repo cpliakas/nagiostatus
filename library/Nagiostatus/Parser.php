@@ -107,7 +107,7 @@ class Nagiostatus_Parser
         while (!feof($fh)) {
 
             // Reads line into buffer, skips processing if empty.
-            $buffer = fgets($fh, 1024);
+            $buffer = rtrim(fgets($fh, 1024));
             if (!$buffer) {
                 continue;
             }
@@ -116,7 +116,7 @@ class Nagiostatus_Parser
             if ($inStatus) {
                 if (false !== ($pos = strpos($buffer, '='))) {
                     $key = ltrim(substr($buffer, 0, $pos));
-                    $status[$key] = rtrim(substr($buffer, $pos + 1));
+                    $status[$key] = substr($buffer, $pos + 1);
                 } elseif (strpos($buffer, '}')) {
                     $plugin->execute($status);
                     $inStatus = false;
@@ -125,8 +125,8 @@ class Nagiostatus_Parser
                 }
             } elseif (strpos($buffer, '{')) {
                 $inStatus = true;
-                $status = array('_type' => rtrim($buffer, " {\r\n"));
-            } else {
+                $status = array('_type' => rtrim($buffer, " {"));
+            } elseif (0 !== strpos($buffer, '#')) {
                 // @todo Handle errors
             }
         }

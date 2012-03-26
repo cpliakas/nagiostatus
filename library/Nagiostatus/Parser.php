@@ -16,10 +16,14 @@
 /**
  * Library that parses Nagios status.dat files into machine readable formats.
  *
+ * The parser implements the observer pattern so that loggers and error handlers
+ * can be attached. In addition, plugins can be registered that render the data
+ * in different machine readable formats.
+ *
  * @package    Nagiostatus
  * @subpackage Parser
  */
-class Nagiostatus_Parser
+class Nagiostatus_Parser implements SplSubject
 {
     /**
      * The name of the file to pass to fopen().
@@ -27,6 +31,20 @@ class Nagiostatus_Parser
      * @var string
      */
     protected $_filename;
+
+    /**
+     * An array of messages set during parsing.
+     *
+     * @var array
+     */
+    protected $_messages = array();
+
+    /**
+     * The name of the file to pass to fopen().
+     *
+     * @var array
+     */
+    protected $_observers = array();
 
     /**
      * Plugin registry.
@@ -78,6 +96,77 @@ class Nagiostatus_Parser
     }
 
     /**
+     * Implements SplSubject::attach().
+     */
+    public function attach(SplObserver $observer)
+    {
+        $id = spl_object_hash($observer);
+        $this->_observers[$id] = $observer;
+    }
+
+    /**
+     * Implements SplSubject::detach().
+     */
+    public function detach(SplObserver $observer)
+    {
+        $id = spl_object_hash($observer);
+        unset($this->_observers[$id]);
+    }
+
+    /**
+     * Implements SplSubject::notify().
+     */
+    public function notify()
+    {
+        foreach ($this->_observers as $observer) {
+            $observer->update($this);
+        }
+    }
+
+    /**
+     * Sets a message, alerts observers.
+     *
+     * @param string $message
+     *   The message.
+     * @param int $severity
+     *   The severity of the message, see Nagiostatus_Message class constants.
+     *   Defaults to Nagiostatus_Message::INFO.
+     * @param array $data
+     *   Additional data relevant to the message. Defaults to an empty array
+     *
+     * @return Nagiostatus_Parser
+     *   An instance of this class.
+     */
+    public function setMessage($message, $severity = Nagiostatus_Message::INFO, array $data = array())
+    {
+        $this->_messages[] = new Nagiostatus_Message($message, $severity, $data);
+        $this->notify();
+        return $this;
+    }
+
+    /**
+     * Returns the last message.
+     *
+     * @return Nagiostatus_Message|false
+     *   The last message edded to the system, false if there are no messages.
+     */
+    public function getLastMessage()
+    {
+        return end($this->_messages);
+    }
+
+    /**
+     * Returns all messages.
+     *
+     * @return array
+     *   The array of Nagiostatus_Message objects.
+     */
+    public function getMessages()
+    {
+        return $this->_messages;
+    }
+
+    /**
      * Parses the status data into an associatice array.
      *
      * @param string $filename
@@ -90,6 +179,17 @@ class Nagiostatus_Parser
     }
 
     /**
+     * Returns the filename set in the constructor.
+     *
+     * @return string
+     *   The filename set in the constructor.
+     */
+    public function getFilename()
+    {
+        return $this->_filename;
+    }
+
+    /**
      * Builds the document.
      *
      * @param Nagiostatus_Plugin_Abstract $plugin
@@ -97,9 +197,11 @@ class Nagiostatus_Parser
      */
     public function buildDocument(Nagiostatus_Plugin_Abstract $plugin)
     {
+        $data = array();
+
         // Opens file, iterates over lines.
         if (!$fh = @fopen($this->_filename, 'r')) {
-            // @todo Handle errors
+            $this->setMessage('error reading file', Nagiostatus_Message::CRIT);
         }
 
         // Initializes document, iterates over lines.
@@ -113,21 +215,34 @@ class Nagiostatus_Parser
             }
 
             // Processes buffer.
-            if ($inStatus) {
-                if (false !== ($pos = strpos($buffer, '='))) {
-                    $key = ltrim(substr($buffer, 0, $pos));
-                    $status[$key] = substr($buffer, $pos + 1);
-                } elseif (strpos($buffer, '}')) {
-                    $plugin->execute($status);
-                    $inStatus = false;
-                } else {
-                    // @todo Handle errors
+            try {
+                if ($inStatus) {
+                    if (false !== ($pos = strpos($buffer, '='))) {
+                        // Parse out report data inside of a status block.
+                        $key = ltrim(substr($buffer, 0, $pos));
+                        $status[$key] = substr($buffer, $pos + 1);
+                    } elseif (strpos($buffer, '}')) {
+                        // Closing tag for status block found.
+                        $plugin->execute($status);
+                        $inStatus = false;
+                    } else {
+                        // We encountered something unexpected.
+                        throw new Exception('invalid report');
+                    }
+                } elseif (strpos($buffer, '{')) {
+                    // Starting tag for status block found.
+                    $inStatus = true;
+                    $status = array('_type' => rtrim($buffer, " {"));
+                } elseif (0 !== strpos($buffer, '#')) {
+                    // We encountered something unexpected.
+                    throw new Exception('invalid line');
                 }
-            } elseif (strpos($buffer, '{')) {
-                $inStatus = true;
-                $status = array('_type' => rtrim($buffer, " {"));
-            } elseif (0 !== strpos($buffer, '#')) {
-                // @todo Handle errors
+            } catch (Exception $e) {
+                $data = array('buffer' => $buffer);
+                if ($inStatus) {
+                    $data['status'] = $inStatus;
+                }
+                $this->setMessage($e->getMessage(), Nagiostatus_Message::ERR, $data);
             }
         }
 
@@ -155,15 +270,23 @@ class Nagiostatus_Parser
         if (null === $pluginName) {
             $pluginName = self::getDefaultPlugin();
         }
+        $data = array('plugin name' => $pluginName);
         if (isset(self::$_plugins[$pluginName])) {
+            // Starts buffering if document is being returned as a string.
             if ($return) {
                 ob_start();
             }
+
+            // Sets info message and begins parsing.
+            $this->setMessage('begin parsing', Nagiostatus_Message::INFO, $data);
             $plugin = new self::$_plugins[$pluginName]($this);
             $this->buildDocument($plugin);
+            $this->setMessage('end parsing', Nagiostatus_Message::INFO, $data);
+
+            // Returns document as a string or true if outputted directly.
             return ($return) ? ob_get_clean() : true;
         } else {
-            // @todo Handle errors
+            $this->setMessage('invalid plugin', Nagiostatus_Message::ERR, $data);
         }
         return false;
     }

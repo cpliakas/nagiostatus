@@ -1,6 +1,6 @@
 # Nagios Status Parser
 
-## Converting Nagios Status Data To Machine Readable Formats
+## Converting Status To Machine Readable Formats
 
 ```php
 
